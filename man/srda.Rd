@@ -11,7 +11,7 @@ srda(
   lambdas = 1,
   nonzeros = 1,
   max_iteration = 100,
-  tolerance = 1e-20,
+  tolerance = 1e-06,
   parallel = FALSE,
   cv_n_folds = 5,
   n_lvs = 1,
@@ -19,21 +19,21 @@ srda(
 )
 }
 \arguments{
-\item{explanatory}{x}
+\item{explanatory}{A explanatory matrix or data frame}
 
-\item{response}{x}
+\item{response}{A response matrix or data frame}
 
-\item{penalization}{x}
+\item{penalization}{The penalization method: "enet", "ust", "none"}
 
-\item{lambdas}{x}
+\item{lambdas}{The ridge penalty parameter of the explanatory latent variable (Xi) used for enet}
 
-\item{nonzeros}{x}
+\item{nonzeros}{The number of non-zero alpha weights of the explanatory latent variable (Xi) used for enet or ust}
 
-\item{max_iteration}{x}
+\item{max_iteration}{Maximum number of iterations}
 
-\item{tolerance}{x}
+\item{tolerance}{Convergence criteria}
 
-\item{parallel}{x}
+\item{parallel}{Run the cross-validation in parallel (logical; TRUE or FALSE)}
 
 \item{cv_n_folds}{x}
 
@@ -42,10 +42,12 @@ srda(
 \item{seed}{x}
 }
 \value{
-x
+A sRDA object
 }
 \description{
-Sparse Redundancy Analysis (sRDA)
+This package is a rewrite of the sRDA (https://cran.r-project.org/package=sRDA) package available on CRAN
+Please visit the original package and their paper for more details.
+If you use this package, please consider cite the original paper of sRDA.
 }
 \examples{
 x

@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_sanity.R
 \name{.check_parameters}
 \alias{.check_parameters}
-\title{Title}
+\title{Check the hyperparameters}
 \usage{
 .check_parameters(lambdas, nonzeros)
 }
@@ -12,8 +12,8 @@
 \item{nonzeros}{x}
 }
 \value{
-logical
+logical; TRUE or FALSE
 }
 \description{
-Title
+Check the hyperparameters
 }

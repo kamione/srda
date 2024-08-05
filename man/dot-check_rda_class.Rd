@@ -2,16 +2,16 @@
 % Please edit documentation in R/check_sanity.R
 \name{.check_rda_class}
 \alias{.check_rda_class}
-\title{Title}
+\title{Check if a variable is a sRDA object}
 \usage{
 .check_rda_class(object)
 }
 \arguments{
-\item{object}{x}
+\item{object}{any}
 }
 \value{
-x
+logical; TRUE or FALSE
 }
 \description{
-Title
+Check if a variable is a sRDA object
 }

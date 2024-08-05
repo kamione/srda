@@ -2,16 +2,16 @@
 % Please edit documentation in R/check_sanity.R
 \name{.check_penalization_method}
 \alias{.check_penalization_method}
-\title{Title}
+\title{Check the penalization method inputs}
 \usage{
 .check_penalization_method(method)
 }
 \arguments{
-\item{method}{x}
+\item{method}{A string}
 }
 \value{
-logical
+logical; TRUE or FALSE
 }
 \description{
-Title
+Check the penalization method inputs
 }

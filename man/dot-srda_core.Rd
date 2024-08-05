@@ -4,18 +4,18 @@
 \alias{.srda_core}
 \title{The core algorithm of the sparse redundancy analysis (sRDA)}
 \usage{
-.srda_core(X, Y, lambda, nonzero, penalization, max_iteration, tolerance)
+.srda_core(X, Y, penalization, lambda, nonzero, max_iteration, tolerance)
 }
 \arguments{
 \item{X}{A explanatory matrix or data frame;}
 
 \item{Y}{A response matrix or data frame;}
 
+\item{penalization}{The penalization method: "enet", "ust", "none"}
+
 \item{lambda}{The ridge penalty parameter of the explanatory latent variable (Xi) used for enet}
 
 \item{nonzero}{The number of non-zero alpha weights of the explanatory latent variable (Xi) used for enet or ust}
-
-\item{penalization}{The penalization method: "enet", "ust", "none"}
 
 \item{max_iteration}{Maximum number of iterations}
 
