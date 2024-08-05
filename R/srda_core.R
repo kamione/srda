@@ -18,9 +18,9 @@
 .srda_core <- function(
     X,
     Y,
+    penalization,
     lambda,
     nonzero,
-    penalization,
     max_iteration,
     tolerance
 ) {
@@ -116,6 +116,7 @@
     inverse_of_XIXI = solve(t(XI) %*% XI) %*% t(XI)
 
     result <- list(
+        component = 1,
         explanatory = X,
         response = Y,
         XI = XI,
