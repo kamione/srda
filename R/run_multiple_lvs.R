@@ -22,7 +22,7 @@
 ) {
     # residuals of X
     Res_X <- X
-    comp_counter <- 1
+    ith_component <- 1
     stop_condition <- Inf
     stop_flag <- FALSE
 
@@ -30,10 +30,10 @@
 
     results <- list()
 
-    while (comp_counter <= n_lvs && stop_flag == FALSE) {
+    while (ith_component <= n_lvs && !stop_flag) {
+        cat("Running component", ith_component, "\n")
 
-        cat("Running component", comp_counter, "\n")
-        results[[comp_counter]] <- srda(
+        result <- srda(
             explanatory = Res_X,
             response = Y,
             penalization = penalization,
@@ -44,24 +44,20 @@
             parallel = parallel,
             max_iteration = max_iteration
         )
+        # update component index
+        result$component <- ith_component
 
-        results[[comp_counter]]$component <- comp_counter
+        # calculate the residuals of X
+        Res_X = apply(Res_X, 2, function(Xcol) {
+                Xcol - result$inverse_of_XIXI %*% Xcol %*% t(result$XI)
+            }
+        )
 
-        reg_coeff <- results[[comp_counter]]$inverse_of_XIXI %*% as.matrix(Res_X)
+        results[[ith_component]] <- result
 
-        # calculate the residuals
-        .calc_residuals <- function(Xcol) {
-            Xcol - results[[comp_counter]]$inverse_of_XIXI %*% Xcol %*% t(results[[comp_counter]]$XI)
-        }
-
-        # update
-        Res_X = apply(Res_X, 2, .calc_residuals)
-
-        results[[comp_counter]]$sum_abs_betas <- sum(results[[comp_counter]]$BETA^2)
-
-        if (comp_counter > 1) {
+        if (ith_component > 1) {
             stop_condition <- abs(
-                results[[comp_counter]]$sum_abs_betas - results[[comp_counter - 1]]$sum_abs_betas
+                result$sum_square_betas - results[[ith_component - 1]]$sum_square_betas
             )
         }
 
@@ -69,10 +65,9 @@
             stop_flag <- TRUE
         }
 
-        cat("Calculation of component", comp_counter, "is completed! \n\n")
-        comp_counter <- comp_counter + 1
+        cat("Calculation of component", ith_component, "is completed! \n\n")
+        ith_component <- ith_component + 1
     }
 
     return(results)
-
 }

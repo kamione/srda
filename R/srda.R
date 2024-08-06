@@ -30,24 +30,23 @@ srda <- function(
     penalization,
     lambdas = 1,
     nonzeros = 1,
+    n_lvs = 1,
     max_iteration = 100,
     tolerance = 1e-6,
     parallel = FALSE,
-    cv_n_folds = 5,
-    n_lvs = 1,
+    cv_n_folds,
     seed
 ) {
-    .check_penalization_method(penalization)
+
+    penalization <- .check_penalization_method(penalization)
     cv <- .check_parameters(lambdas, nonzeros)
 
-    if (cv) {
-        cv_n_folds = 5
+    if (cv && missing(cv_n_folds)) {
+        cv_n_folds <- 5
     }
 
-    if (parallel) {
-        # load packages for parallel computing
-        library(parallel)
-        library(doSNOW)
+    if (missing(seed)) {
+        seed <- 1234
     }
 
     # Multiple Latent Variables ------------------------------------------------

@@ -12,6 +12,10 @@
 #'
 #' @return x
 #'
+#' @import parallel
+#' @import doSNOW
+#' @import foreach
+#'
 #' @examples
 #' x
 .run_parallel_cv <- function(
@@ -19,10 +23,10 @@
     tolerance
 ) {
 
-    n_cores <- detectCores() - 1 # avoid exhaustion of CPU cores
-    cl <- makeCluster(n_cores, type = "SOCK")
-    registerDoSNOW(cl)
-    getDoParWorkers()
+    n_cores <- parallel::detectCores() - 1 # avoid exhaustion of CPU cores
+    cl <- parallel::makeCluster(n_cores, type = "SOCK")
+    doSNOW::registerDoSNOW(cl)
+    foreach::getDoParWorkers()
 
     pb <- txtProgressBar(min = 0, max = length(lambdas), style = 3)
     progress <- function(n) {
@@ -31,43 +35,42 @@
     opts <- list(progress = progress)
 
     # Get the alphas with parallel computing
-    result <- foreach(
-        # lambda = lambdas,
+    result <- foreach::foreach(
         lambda = rep(lambdas, times = length(nonzeros)),
         nonzero = rep(nonzeros, each = length(lambdas)),
         .combine = rbind,
-        #.export = c("enet", ".srda_core", ".get_enet"),
         .packages = c("srda"),
         .options.snow = opts
     ) %dopar% {
-        cv_abs_cors <- rep(NA, cv_n_folds)
-        cv_max_iteration <- rep(NA, cv_n_folds)
+        cv_absolute_rhos <- numeric(cv_n_folds)
+        cv_max_iteration <- numeric(cv_n_folds)
         for (ith_fold in 1:cv_n_folds) {
-            X.train <- X[label != ith_fold, ]
-            X.test  <- X[label == ith_fold, ]
-            Y.train <- Y[label != ith_fold, ]
-            Y.test  <- Y[label == ith_fold, ]
-            res <- .srda_core(
-                X = X.train,
-                Y = Y.train,
+            X_train <- X[label != ith_fold, ]
+            X_test  <- X[label == ith_fold, ]
+            Y_train <- Y[label != ith_fold, ]
+            Y_test  <- Y[label == ith_fold, ]
+            result <- .srda_core(
+                X = X_train,
+                Y = Y_train,
                 lambda = lambda,
                 nonzero = nonzero,
                 max_iteration = max_iteration,
                 penalization = penalization,
                 tolerance = tolerance
             )
-            XI.test = scale(X.test) %*% res$ALPHA
-            cv_abs_cors[ith_fold] <- sum(
-                abs(cor(XI.test, Y.test)), na.rm = TRUE
+            XI_test = scale(X_test) %*% result$ALPHA
+            # store correlations between X_test and each columns of Y_test
+            cv_absolute_rhos[ith_fold] <- sum(
+                abs(cor(XI_test, Y_test)), na.rm = TRUE
             )
-            cv_max_iteration[ith_fold] <- res$n_iterations
+            cv_max_iteration[ith_fold] <- result$n_iteration
         }
 
         iter_result <- data.frame(
             lambda = lambda,
             nonzero = nonzero,
-            mean_abs_cor = mean(cv_abs_cors),
-            abs_cors = I(list(cv_abs_cors)),
+            mean_absolute_rhos = mean(cv_absolute_rhos),
+            absolute_rhos = I(list(cv_absolute_rhos)),
             max_iteration = I(list(cv_max_iteration))
         )
 
@@ -75,7 +78,7 @@
 
     } # end of lambda for loop
     close(pb)
-    stopCluster(cl)
+    parallel::stopCluster(cl)
 
     return(result)
 }

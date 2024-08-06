@@ -59,14 +59,58 @@
         )
     }
 
-    best_combinations <- cv_results[which.max(cv_results$mean_abs_cor), ]
-    best_lambda <- best_combinations$lambda
-    best_nonzero <- best_combinations$nonzero
+    best_lambda <- cv_results[which.max(cv_results$mean_absolute_rhos), "lambda"]
+    best_nonzero <- cv_results[which.max(cv_results$mean_absolute_rhos), "nonzero"]
 
     result <- list(
         cv_results = cv_results,
         best_lambda = best_lambda,
         best_nonzero = best_nonzero
+    )
+
+    return(result)
+}
+
+
+#' Title
+#'
+#' This is an internal function
+#'
+#' @param X x
+#' @param Y x
+#' @param n_folds x
+#' @param seed x
+#'
+#' @return x
+#'
+#' @examples x
+.get_resampled_splits <- function(X, Y, n_folds, seed) {
+
+    if (missing(seed)) {
+        seed <- 1234
+    }
+
+    n <- dim(X)[1]
+    #re-sample data rows
+    set.seed(seed)
+    splitting_dimensions <- sample(1:n, n)
+
+    X.sampled <- X[splitting_dimensions, ]
+    Y.sampled <- Y[splitting_dimensions, ]
+
+    # calculate how many rows are left over
+    leftover = n %% n_folds
+
+    labels = rep(1:n_folds, each = (n - leftover) / n_folds)
+
+    if(leftover != 0) {
+        labels = c(labels, (1:n_folds)[1:leftover])
+    }
+
+    result <- list(
+        X.sampled = X.sampled,
+        Y.sampled = Y.sampled,
+        labels = labels
     )
 
     return(result)

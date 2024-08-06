@@ -26,107 +26,106 @@
 ) {
 
     #1. Preparation of the data ------------------------------------------------
-    Y.mat <- as.matrix(Y)
-    Yc <- scale(Y.mat)
-    Yc <- Yc[, !colSums(!is.finite(Yc))]
+    # get columns only with finite values
+    X_centered <- scale(as.matrix(X))
+    X_centered <- X_centered[, !colSums(!is.finite(X_centered))]
 
-    X.mat <- as.matrix(X)
-    Xcr <- scale(X.mat)
-    Xcr <- Xcr[, !colSums(!is.finite(Xcr))]
+    Y_centered <- scale(as.matrix(Y))
+    Y_centered <- Y_centered[, !colSums(!is.finite(Y_centered))]
 
-    # for initialization, let:
-    #   ETA^(0) = y_1 + y_2 + ... + y_q = Y * BETA_hat^(0) ( = Y_i) where
-    #   BETA^(0) = [1, 1, ..., 1]
-    # an y-weight column vector of q elements
-    BETA = matrix(rep(1, ncol(Yc)), ncol = 1, byrow = TRUE)
-    # an x-weight column vector of p elements
-    ALPHA = matrix(rep(1, ncol(Xcr)), ncol = 1, byrow = TRUE)
+    # initiate weights of 1 for X's ALPHA and Y's BETA
+    ALPHA = matrix(rep(1, ncol(X_centered)), ncol = 1)
+    BETA = matrix(rep(1, ncol(Y_centered)), ncol = 1)
 
     #2. Iterative loop until convergence ---------------------------------------
-    CRTs <- c()
-    sum_abs_Betas <- c()
-    n_iterations = 0 # iteration counter
-
+    CRT <- Inf # initate convergence criteria between alpha and beta
+    CRTs <- numeric()
+    abs_CRT_delta <- Inf
+    ith_iteration <- 0
     stop_flag <- FALSE
-    CRT = 1 # initate convergence measure between alpha and beta
+    sum_abs_BETAs <- numeric()
+    sum_square_BETAs <- numeric()
 
-    while (CRT > tolerance && !stop_flag && n_iterations < max_iteration) {
+    while (CRT > tolerance && !stop_flag && ith_iteration < max_iteration) {
 
-        ETA = Yc %*% BETA
-        ETA = scale(ETA)
-
-        XI = Xcr %*% ALPHA
-        XI = scale(XI)
+        XI <- scale(X_centered %*% ALPHA)
+        ETA <- scale(Y_centered %*% BETA)
 
         # Chose between generic RDA, sRDA with ENET or sRDA with UST
         ALPH_0 <- switch(
             penalization,
             # calculate with lm without penalization
-            "none" = {solve(t(Xcr) %*% Xcr) %*% t(Xcr) %*% ETA},
+            "none" = {solve(t(X_centered) %*% X_centered) %*% t(X_centered) %*% ETA},
             # calculate with elastic net
-            "enet" = {.get_enet(Xcr, ETA, lambda, nonzero)},
+            "enet" = {.get_enet(X_centered, ETA, lambda, nonzero)},
             # calculate with UST
-            "ust" = {.get_ust(Xcr, ETA, nonzero)}
+            "ust" = {.get_ust(X_centered, ETA, nonzero)}
         )
 
         # compute the value of XI^(1):
         #   XIhat^(1) = SUM_running to p where t=1 ( ahat_t^(0) *x_t )
-        XI = Xcr %*% ALPH_0
-
         # normalize XIhat^(1) such that
         #   t(XIhat^(1))*XIhat^(1) = t(ahat^(0)) t(X)*X*ahat^(0) = 1
-        #   t(XI)%*%XI = t(ALPH_0) %*% t(Xcr) %*% Xcr %*% ALPH_0 = 1
+        #   t(XI)%*%XI = t(ALPH_0) %*% t(X_centered) %*% X_centered %*% ALPH_0 = 1
         #   that is its variance is 1
-        XI = scale(XI)
+        XI <- scale(X_centered %*% ALPH_0)
 
         # For the value BETAhat^(1) and hence ETAhat^(1),
         # regress y1, y2, ..., yq separately on XIhat^(1),
         #   y_1 = BETA_1 * XIhat^(1) + Epsilon_1
         #   ...
         #   y_q = BETA_q * XIhat^(1) + Epsilon_q
-        BETA_0 = solve(t(XI) %*% XI) %*% t(XI) %*% Yc
-        BETA_0 = t(as.matrix(BETA_0))
+        BETA_0 <- t(as.matrix(solve(t(XI) %*% XI) %*% t(XI) %*% Y_centered))
 
         # compute the vaule of ETAhat^(1),
         #   ETAhat^(1) = SUM_running to q where k=1 (BETAhat_k^(1) * y_k)
-        ETA = Yc %*% BETA_0
-        ETA = scale(ETA)
+        ETA <- scale(Y_centered %*% BETA_0)
 
-        # calculate convergence of Alphas and Betas
-        CRT = sum((ALPHA - ALPH_0)^2, (BETA - BETA_0)^2)
+        # calculate convergence criteria
+        CRT <- sum((ALPHA - ALPH_0)^2, (BETA - BETA_0)^2)
 
-        # update alpha and beta
-        ALPHA = ALPH_0
-        BETA = BETA_0
+        # update ALPHA and BETA
+        ALPHA <- ALPH_0
+        BETA  <- BETA_0
 
         # check if last two iterations CR converges
-        n_iterations = n_iterations + 1
-        CRTs[[n_iterations]] = CRT
-        sum_abs_Betas[[n_iterations]] = sum(abs(BETA))
+        ith_iteration <- ith_iteration + 1
+        CRTs[ith_iteration] <- CRT
+        sum_abs_BETAs[ith_iteration] <- sum(abs(BETA))
+        sum_square_BETAs[ith_iteration] <- sum(BETA^2)
 
-        if (n_iterations > 1) {
-            abs_crt_delta <- abs(CRTs[[n_iterations]] - CRTs[[n_iterations - 1]])
-            if (abs_crt_delta < tolerance) {
-                stop_flag <- TRUE
-            }
+        if (ith_iteration > 1) {
+            abs_CRT_delta <- abs(CRTs[ith_iteration] - CRTs[ith_iteration - 1])
+        }
+
+        if (abs_CRT_delta < tolerance) {
+            stop_flag <- TRUE
         }
     }
 
-    # use this later for second latent variable
+    # residual: use this later for second latent variable
     inverse_of_XIXI = solve(t(XI) %*% XI) %*% t(XI)
 
+    # Given that the data are standardized, the regression coefficients are the
+    # same as the correlation coefficients
+    reg_coefficient <- cor(XI, ETA)[1, 1]
+    sum_of_square_rhos <- sum((cor(XI, Y))^2)
+
     result <- list(
-        component = 1,
+        component = 1, # this is a default value
         explanatory = X,
         response = Y,
         XI = XI,
         ETA = ETA,
         ALPHA = ALPHA,
-        BETA= BETA,
-        n_iterations = n_iterations,
+        BETA = BETA,
+        reg_coefficient = reg_coefficient,
+        sum_of_square_rhos = sum_of_square_rhos,
+        n_iteration = ith_iteration,
         inverse_of_XIXI = inverse_of_XIXI,
         iterations_crts = CRTs,
-        sum_absolute_betas = sum_abs_Betas
+        sum_absolute_betas = sum_abs_BETAs[ith_iteration],
+        sum_square_betas = sum_square_BETAs[ith_iteration]
     )
 
     class(result) <- "sRDA"

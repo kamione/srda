@@ -13,13 +13,8 @@
 #' @param method A string
 #' @return logical; TRUE or FALSE
 .check_penalization_method <- function(method) {
-    if (!method %in% c("enet", "ust", "none")) {
-        message <- paste(
-            "Please select one of the penalization methods:",
-            "'enet', 'ust', or 'none'"
-        )
-        stop(message, call. = FALSE)
-    }
+    methods <- c("enet", "ust", "none")
+    return(match.arg(method, methods))
 }
 
 #' Check the hyperparameters
