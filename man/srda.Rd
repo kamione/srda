@@ -10,11 +10,11 @@ srda(
   penalization,
   lambdas = 1,
   nonzeros = 1,
+  n_lvs = 1,
   max_iteration = 100,
   tolerance = 1e-06,
   parallel = FALSE,
-  cv_n_folds = 5,
-  n_lvs = 1,
+  cv_n_folds,
   seed
 )
 }
@@ -29,6 +29,8 @@ srda(
 
 \item{nonzeros}{The number of non-zero alpha weights of the explanatory latent variable (Xi) used for enet or ust}
 
+\item{n_lvs}{x}
+
 \item{max_iteration}{Maximum number of iterations}
 
 \item{tolerance}{Convergence criteria}
@@ -36,8 +38,6 @@ srda(
 \item{parallel}{Run the cross-validation in parallel (logical; TRUE or FALSE)}
 
 \item{cv_n_folds}{x}
-
-\item{n_lvs}{x}
 
 \item{seed}{x}
 }
