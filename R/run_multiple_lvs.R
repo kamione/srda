@@ -23,7 +23,6 @@
     # residuals of X
     Res_X <- X
     ith_component <- 1
-    stop_condition <- Inf
     stop_flag <- FALSE
 
     cat("A total of", n_lvs, "latent variables are being calculated.", "\n\n")
@@ -57,8 +56,10 @@
 
         if (ith_component > 1) {
             stop_condition <- abs(
-                result$sum_square_betas - results[[ith_component - 1]]$sum_square_betas
+                result$sum_squared_betas - results[[ith_component - 1]]$sum_squared_betas
             )
+        } else {
+            stop_condition <- Inf
         }
 
         if (stop_condition < tolerance) {

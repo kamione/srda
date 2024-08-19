@@ -36,10 +36,10 @@
 
     # Get the alphas with parallel computing
     result <- foreach::foreach(
-        lambda = rep(lambdas, times = length(nonzeros)),
-        nonzero = rep(nonzeros, each = length(lambdas)),
+        lambda = rep(lambdas, each = length(nonzeros)),
+        nonzero = rep(nonzeros, times = length(lambdas)),
         .combine = rbind,
-        .packages = c("srda"),
+        .packages = c("srdax"),
         .options.snow = opts
     ) %dopar% {
         cv_absolute_rhos <- numeric(cv_n_folds)

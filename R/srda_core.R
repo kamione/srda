@@ -38,13 +38,13 @@
     BETA = matrix(rep(1, ncol(Y_centered)), ncol = 1)
 
     #2. Iterative loop until convergence ---------------------------------------
-    CRT <- Inf # initate convergence criteria between alpha and beta
+    CRT <- Inf # initiate convergence criteria between alpha and beta
     CRTs <- numeric()
     abs_CRT_delta <- Inf
     ith_iteration <- 0
     stop_flag <- FALSE
     sum_abs_BETAs <- numeric()
-    sum_square_BETAs <- numeric()
+    sum_squared_BETAs <- numeric()
 
     while (CRT > tolerance && !stop_flag && ith_iteration < max_iteration) {
 
@@ -92,7 +92,7 @@
         ith_iteration <- ith_iteration + 1
         CRTs[ith_iteration] <- CRT
         sum_abs_BETAs[ith_iteration] <- sum(abs(BETA))
-        sum_square_BETAs[ith_iteration] <- sum(BETA^2)
+        sum_squared_BETAs[ith_iteration] <- sum(BETA^2)
 
         if (ith_iteration > 1) {
             abs_CRT_delta <- abs(CRTs[ith_iteration] - CRTs[ith_iteration - 1])
@@ -109,7 +109,6 @@
     # Given that the data are standardized, the regression coefficients are the
     # same as the correlation coefficients
     reg_coefficient <- cor(XI, ETA)[1, 1]
-    sum_of_square_rhos <- sum((cor(XI, Y))^2)
 
     result <- list(
         component = 1, # this is a default value
@@ -120,12 +119,11 @@
         ALPHA = ALPHA,
         BETA = BETA,
         reg_coefficient = reg_coefficient,
-        sum_of_square_rhos = sum_of_square_rhos,
         n_iteration = ith_iteration,
         inverse_of_XIXI = inverse_of_XIXI,
         iterations_crts = CRTs,
         sum_absolute_betas = sum_abs_BETAs[ith_iteration],
-        sum_square_betas = sum_square_BETAs[ith_iteration]
+        sum_squared_betas = sum_squared_BETAs[ith_iteration]
     )
 
     class(result) <- "sRDA"
