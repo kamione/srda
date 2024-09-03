@@ -19,7 +19,7 @@ response
 Quadratic penalty parameter. lambda=0 performs the Lasso fit.
 }
 
-\item{nozero}{x}
+\item{nonzero}{x}
 }
 \value{
 A matrix of penalized weights

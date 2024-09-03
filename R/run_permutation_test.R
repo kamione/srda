@@ -1,19 +1,48 @@
-sRDA_permutation_test <- function(rda, n_permutation, plot = FALSE) {
+#' Permutation test for the significance of features in sRDA
+#'
+#' @param rda x
+#' @param n_permutation x
+#' @param plot x
+#' @return a result data frame
+#' @export
+#'
+#' @import parallel
+#' @import doSNOW
+#' @import foreach
+#'
+#' @examples
+#' x
+#'
+
+run_permutation_test <- function(rda, n_permutation, plot = FALSE) {
 
     if (!.check_rda_class(rda)) {
         stop("The input is not of class 'sRDA'.")
     }
 
+    n_cores <- parallel::detectCores() - 1 # avoid exhaustion of CPU cores
+    cl <- parallel::makeCluster(n_cores, type = "SOCK")
+    doSNOW::registerDoSNOW(cl)
+    foreach::getDoParWorkers()
+
     cat("Now performing a permutation test to assess the significance of RDA componenet: \n")
-    pb = txtProgressBar(min = 0, max = n_permutation, width = 40, style = 3)
+    # prgoress bar
+    pb <- txtProgressBar(min = 0, max = n_permutation,width = 80, style = 3)
+    progress <- function(n) {
+        setTxtProgressBar(pb, n)
+    }
+    opts <- list(progress = progress)
 
     n_subjects <- dim(rda$explanatory)[1]
+    permuted_ssr <- numeric(n_permutation)
 
-    ssr <- sum((cor(rda$XI, rda$response))^2)
-
-    permuted_rhos <- numeric(n_permutation)
-    for (iteration in 1:n_permutation) {
-        set.seed(iteration)
+    permuted_ssr <- foreach::foreach(
+        ith_perm = 1:n_permutation,
+        .combine = c,
+        .packages = c("srdax"),
+        .options.snow = opts
+    ) %dopar% {
+        set.seed(ith_perm)
         resampled_index <- sample(1:n_subjects, n_subjects, replace = FALSE)
         resampled_x <- rda$explanatory[resampled_index, ]
         result <- srda(
@@ -24,22 +53,15 @@ sRDA_permutation_test <- function(rda, n_permutation, plot = FALSE) {
             penalization = "enet",
             max_iteration = 100
         )
-
-        permuted_rhos = c(permuted_rhos, sum((cor(result$XI, result$response))^2))
-
-        setTxtProgressBar(pb, iteration)
+        return(result$sum_squared_betas)
     }
+    parallel::stopCluster(cl)
     close(pb)
 
     results <- list()
-    results$empirical_rho <- empirical_rho
-    results$p_value <- sum(empirical_rho > permuted_rhos)
-    results$permuted_rhos <- permuted_rhos
-
-    if (plot) {
-        results$fig <- .plot_null_distribution(results)
-    }
-
+    results$empirical_rho <- rda$sum_squared_betas
+    results$permuted_rhos <- permuted_ssr
+    results$p_value <- sum(permuted_ssr > empirical_ssr) / (1 + n_permutation)
     return(results)
 }
 

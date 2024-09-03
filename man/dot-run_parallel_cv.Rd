@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_paraellel_cv.R
 \name{.run_parallel_cv}
 \alias{.run_parallel_cv}
-\title{Title}
+\title{run cross-validation with parallel processing}
 \usage{
 .run_parallel_cv(
   X,
@@ -17,29 +17,30 @@
 )
 }
 \arguments{
-\item{X}{x}
+\item{X}{explanatory matrix (n x p)}
 
-\item{Y}{x}
+\item{Y}{response matrix (n x q)}
 
-\item{lambdas}{x}
+\item{lambdas}{hyperparameter(s) for penalization}
 
-\item{nonzeros}{x}
+\item{nonzeros}{maximum number of non-zero coefficients}
 
-\item{label}{x}
+\item{label}{column labels of the X}
 
-\item{cv_n_folds}{x}
+\item{cv_n_folds}{number of folds for cross-validation}
 
-\item{penalization}{x}
+\item{penalization}{which penalization method}
 
-\item{max_iteration}{x}
+\item{max_iteration}{maximum number of iterations}
 
-\item{tolerance}{x}
+\item{tolerance}{tolerance}
 }
 \value{
 x
 }
 \description{
-Title
+This is an internal function.
+TODO Performance issues: the initiation is slow
 }
 \examples{
 x

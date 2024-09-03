@@ -66,7 +66,7 @@
             stop_flag <- TRUE
         }
 
-        cat("Calculation of component", ith_component, "is completed! \n\n")
+        cat("Calculation of component", ith_component, "is completed on", Sys.time(), "!\n\n")
         ith_component <- ith_component + 1
     }
 

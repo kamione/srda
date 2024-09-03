@@ -12,7 +12,7 @@ srda(
   nonzeros = 1,
   n_lvs = 1,
   max_iteration = 100,
-  tolerance = 1e-06,
+  tolerance = 1e-20,
   parallel = FALSE,
   cv_n_folds,
   seed
@@ -45,9 +45,10 @@ srda(
 A sRDA object
 }
 \description{
-This package is a rewrite of the sRDA (https://cran.r-project.org/package=sRDA) package available on CRAN
-Please visit the original package and their paper for more details.
-If you use this package, please consider cite the original paper of sRDA.
+This package is a rewrite of the sRDA package available on CRAN. Please visit
+the original package on https://cran.r-project.org/package=sRDA and their
+paper for more details. If you use this package, please consider cite the
+original paper of sRDA.
 }
 \examples{
 x

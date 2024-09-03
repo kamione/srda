@@ -1,14 +1,17 @@
-#' Title
+#' run cross-validation with parallel processing
 #'
-#' @param X x
-#' @param Y x
-#' @param lambdas x
-#' @param nonzeros x
-#' @param label x
-#' @param cv_n_folds x
-#' @param penalization x
-#' @param max_iteration x
-#' @param tolerance x
+#' This is an internal function.
+#' TODO Performance issues: the initiation is slow
+#'
+#' @param X explanatory matrix (n x p)
+#' @param Y response matrix (n x q)
+#' @param lambdas hyperparameter(s) for penalization
+#' @param nonzeros maximum number of non-zero coefficients
+#' @param label column labels of the X
+#' @param cv_n_folds number of folds for cross-validation
+#' @param penalization which penalization method
+#' @param max_iteration maximum number of iterations
+#' @param tolerance tolerance
 #'
 #' @return x
 #'
@@ -28,7 +31,8 @@
     doSNOW::registerDoSNOW(cl)
     foreach::getDoParWorkers()
 
-    pb <- txtProgressBar(min = 0, max = length(lambdas), style = 3)
+    # prgo bar
+    pb <- txtProgressBar(min = 0, max = length(lambdas) * length(nonzeros), style = 3)
     progress <- function(n) {
         setTxtProgressBar(pb, n)
     }
@@ -38,7 +42,7 @@
     result <- foreach::foreach(
         lambda = rep(lambdas, each = length(nonzeros)),
         nonzero = rep(nonzeros, times = length(lambdas)),
-        .combine = rbind,
+        .combine = dplyr::bind_rows,
         .packages = c("srdax"),
         .options.snow = opts
     ) %dopar% {
@@ -77,6 +81,7 @@
         return(iter_result)
 
     } # end of lambda for loop
+
     close(pb)
     parallel::stopCluster(cl)
 

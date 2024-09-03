@@ -12,13 +12,16 @@
 #'
 #' @examples
 #' x
+#'
+
 run_bootstrapping_test <- function(
     explanatory,
     response,
     lambda,
     nonzero,
-    n_bootstrap,
-    ci
+    method,
+    n_bootstrap = 1000,
+    ci = 0.95
 ) {
     cat("Now performing bootstrapping to assess the significance of features: \n")
     pb = txtProgressBar(min = 0, max = n_bootstrap, width = 40, style = 3)
@@ -28,10 +31,13 @@ run_bootstrapping_test <- function(
     n_subjects <- dim(explanatory)[1]
 
     for (iteration in 1:n_bootstrap) {
-        set.seed(iteration)
-        resampled_index <- sample(1:n_subjects, n_subjects, replace = TRUE)
-        resampled_x <- explanatory[resampled_index, ]
-        resampled_y <- response[resampled_index, ]
+
+        if (method == "stability") {
+            set.seed(iteration)
+            resampled_index <- sample(1:n_subjects, n_subjects, replace = TRUE)
+            resampled_x <- explanatory[resampled_index, ]
+            resampled_y <- response[resampled_index, ]
+        }
 
         result <- sRDA(
             explanatory = resampled_x,

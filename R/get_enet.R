@@ -3,7 +3,7 @@
 #' This is an internal function.
 #'
 #' @inheritParams elasticnet::enet
-#' @param nozero x
+#' @param nonzero x
 #'
 #' @return A matrix of penalized weights
 #'

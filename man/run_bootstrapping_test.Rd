@@ -4,7 +4,15 @@
 \alias{run_bootstrapping_test}
 \title{Bootstrapping test for the significance of features in sRDA}
 \usage{
-run_bootstrapping_test(explanatory, response, lambda, nonzero, n_bootstrap, ci)
+run_bootstrapping_test(
+  explanatory,
+  response,
+  lambda,
+  nonzero,
+  method,
+  n_bootstrap = 1000,
+  ci = 0.95
+)
 }
 \arguments{
 \item{explanatory}{x}
@@ -27,4 +35,5 @@ Bootstrapping test for the significance of features in sRDA
 }
 \examples{
 x
+
 }
